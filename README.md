@@ -103,6 +103,8 @@ Network Response
 
 ## System Architecture
 
+![System Architecture](docs/diagram.png)
+
 The system follows a closed-loop architecture:
 
 1. **Network Monitoring** — Collect live network telemetry.
