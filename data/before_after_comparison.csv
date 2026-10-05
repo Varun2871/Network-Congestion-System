@@ -1,0 +1,4 @@
+priority,received_mbps_before,packet_loss_percent_before,jitter_ms_before,received_mbps_after,packet_loss_percent_after,jitter_ms_after,throughput_change_mbps,throughput_change_percent,jitter_change_ms,jitter_change_percent
+HIGH,6.56,0.0,2.876,11.75,0.0,1.123,5.19,79.1158536585366,-1.753,-60.95271210013908
+MEDIUM,6.56,0.0,1.056,4.93,0.0,3.405,-1.63,-24.847560975609756,2.3489999999999998,222.44318181818178
+LOW,6.49,0.0,4.599,3.01,0.0,10.14,-3.4800000000000004,-53.620955315870575,5.541,120.48271363339857

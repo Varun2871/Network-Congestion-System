@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Intelligence Control Center</title>
+<style>
+:root{
+  --bg:#07111f;
+  --panel:#0c1828;
+  --panel2:#101f32;
+  --panel3:#14263c;
+  --line:#1d3148;
+  --text:#eef5ff;
+  --muted:#8497ad;
+  --blue:#55a7ff;
+  --cyan:#46d8ff;
+  --green:#32d583;
+  --yellow:#f6c85f;
+  --red:#ff6577;
+  --purple:#9b8cff;
+  --shadow:0 18px 50px rgba(0,0,0,.28);
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 15% 0%,rgba(70,216,255,.08),transparent 30%),
+    radial-gradient(circle at 85% 10%,rgba(155,140,255,.08),transparent 28%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  min-height:100vh;
+}
+button{font:inherit}
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:248px;
+  background:rgba(6,15,28,.94);
+  border-right:1px solid var(--line);
+  position:fixed;
+  inset:0 auto 0 0;
+  z-index:20;
+  padding:22px 14px;
+  display:flex;
+  flex-direction:column;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:4px 10px 24px;
+}
+.brand-mark{
+  width:38px;height:38px;border-radius:11px;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  display:grid;place-items:center;
+  box-shadow:0 0 28px rgba(70,216,255,.22);
+}
+.brand-mark svg{width:21px;height:21px}
+.brand-title{font-weight:750;font-size:14px;letter-spacing:.2px}
+.brand-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.nav-label{
+  color:#536981;font-size:10px;font-weight:700;
+  letter-spacing:1.4px;text-transform:uppercase;
+  padding:15px 11px 7px;
+}
+.nav button{
+  width:100%;border:0;background:transparent;color:#91a5bc;
+  display:flex;align-items:center;gap:11px;
+  padding:11px 12px;border-radius:10px;cursor:pointer;
+  text-align:left;font-size:13px;margin:2px 0;
+  transition:.18s ease;
+}
+.nav button:hover{background:#102137;color:#dceaff}
+.nav button.active{
+  background:linear-gradient(90deg,rgba(70,216,255,.14),rgba(85,167,255,.06));
+  color:#e9f7ff;box-shadow:inset 2px 0 var(--cyan);
+}
+.nav svg{width:17px;height:17px;opacity:.85}
+.sidebar-bottom{margin-top:auto}
+.system-mini{
+  border:1px solid var(--line);background:#0a1727;border-radius:13px;
+  padding:12px;margin:7px 3px 0;
+}
+.system-mini-row{display:flex;justify-content:space-between;font-size:11px;margin:6px 0}
+.system-mini-row span:first-child{color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px}
+.dot.green{background:var(--green);box-shadow:0 0 9px rgba(50,213,131,.6)}
+.dot.red{background:var(--red)}
+.main{margin-left:248px;width:calc(100% - 248px)}
+.topbar{
+  height:68px;border-bottom:1px solid var(--line);
+  background:rgba(7,17,31,.78);backdrop-filter:blur(16px);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;position:sticky;top:0;z-index:15;
+}
+.page-title{font-size:18px;font-weight:720}
+.page-subtitle{font-size:11px;color:var(--muted);margin-top:3px}
+.top-actions{display:flex;align-items:center;gap:10px}
+.live-pill,.status-pill{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 11px;border-radius:20px;font-size:11px;font-weight:650;
+  border:1px solid var(--line);background:#0b1929;
+}
+.live-pill{color:#91ffd0}
+.btn{
+  border:1px solid var(--line);background:#0c1a2c;color:#cfe0f3;
+  padding:8px 12px;border-radius:9px;cursor:pointer;font-size:11px;
+}
+.btn:hover{background:#13263d;border-color:#31506f}
+.btn.primary{background:linear-gradient(135deg,#1678c9,#315bc8);border-color:#397ed0;color:white}
+.content{padding:25px 28px 40px}
+.section{display:none;animation:fade .22s ease}
+.section.active{display:block}
+@keyframes fade{from{opacity:.3;transform:translateY(3px)}to{opacity:1;transform:none}}
+.section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px}
+.section-title{font-size:22px;font-weight:750}
+.section-desc{font-size:12px;color:var(--muted);margin-top:5px}
+.grid{display:grid;gap:14px}
+.kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{
+  background:linear-gradient(145deg,rgba(16,31,50,.96),rgba(10,23,39,.96));
+  border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.kpi{padding:17px}
+.kpi-top{display:flex;justify-content:space-between;align-items:center}
+.kpi-label{font-size:11px;color:var(--muted);font-weight:650}
+.kpi-icon{
+  width:30px;height:30px;border-radius:9px;background:#12263c;
+  display:grid;place-items:center;color:var(--cyan)
+}
+.kpi-icon svg{width:16px;height:16px}
+.kpi-value{font-size:27px;font-weight:780;letter-spacing:-.7px;margin-top:13px}
+.kpi-unit{font-size:11px;color:var(--muted);font-weight:500;margin-left:4px}
+.kpi-foot{font-size:10px;color:#6f859d;margin-top:6px}
+.two{grid-template-columns:1.55fr 1fr}
+.three{grid-template-columns:repeat(3,1fr)}
+.chart-card{padding:18px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.card-title{font-size:13px;font-weight:700}
+.card-meta{font-size:10px;color:var(--muted)}
+.chart-wrap{height:240px;position:relative}
+canvas{width:100%;height:100%;display:block}
+.legend{display:flex;gap:15px;flex-wrap:wrap;margin-top:9px}
+.legend span{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.state-card{padding:20px}
+.state{
+  border-radius:13px;padding:18px;
+  border:1px solid rgba(50,213,131,.22);
+  background:rgba(50,213,131,.06);
+}
+.state.warning{border-color:rgba(246,200,95,.25);background:rgba(246,200,95,.06)}
+.state.congested{border-color:rgba(255,101,119,.28);background:rgba(255,101,119,.06)}
+.state-name{font-size:26px;font-weight:800;letter-spacing:.5px}
+.state-normal{color:var(--green)}
+.state-warning{color:var(--yellow)}
+.state-congested{color:var(--red)}
+.state-reason{font-size:11px;color:#a1b2c5;margin-top:7px;line-height:1.55}
+.progress{height:6px;border-radius:10px;background:#1a2c41;overflow:hidden}
+.progress > div{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width .5s}
+.score-row{display:flex;justify-content:space-between;font-size:11px;margin:15px 0 7px;color:var(--muted)}
+.info-list{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.info{
+  padding:11px 12px;background:#0a1727;border:1px solid #172b41;border-radius:10px;
+}
+.info-label{font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:#62788f}
+.info-value{font-size:12px;margin-top:4px;font-weight:650;color:#d9e8f7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.policy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.policy{
+  padding:15px;background:#0a1727;border:1px solid #192e45;border-radius:11px;
+}
+.policy-name{font-size:10px;color:var(--muted);font-weight:700}
+.policy-value{font-size:22px;font-weight:780;margin-top:6px}
+.policy-unit{font-size:10px;color:#667d95}
+.policy.high{border-color:rgba(255,101,119,.24)}
+.policy.medium{border-color:rgba(246,200,95,.22)}
+.policy.low{border-color:rgba(70,216,255,.22)}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{padding:11px 12px;text-align:left;border-bottom:1px solid #172b40;white-space:nowrap}
+th{color:#687e95;font-size:9px;text-transform:uppercase;letter-spacing:.7px}
+td{color:#c8d7e6}
+tr:hover td{background:rgba(70,216,255,.025)}
+.badge{
+  display:inline-flex;align-items:center;padding:4px 8px;border-radius:20px;
+  font-size:9px;font-weight:750;letter-spacing:.4px;
+}
+.badge.normal{background:rgba(50,213,131,.1);color:#61e6a0}
+.badge.warning{background:rgba(246,200,95,.11);color:#f7d27c}
+.badge.congested{background:rgba(255,101,119,.11);color:#ff8392}
+.badge.ok{background:rgba(70,216,255,.1);color:#73ddff}
+.timeline{display:flex;flex-direction:column;gap:8px;max-height:350px;overflow:auto}
+.event{
+  display:grid;grid-template-columns:75px 8px 1fr;gap:9px;align-items:start;
+  padding:9px 0;border-bottom:1px solid #15293e;
+}
+.event-time{font-size:9px;color:#62778d;padding-top:2px}
+.event-line{width:7px;height:7px;border-radius:50%;background:var(--cyan);margin-top:4px;box-shadow:0 0 8px rgba(70,216,255,.45)}
+.event-body{font-size:11px;color:#b7c8da;line-height:1.45}
+.event-body strong{color:#e7f2fc}
+.metric-section{margin-top:14px}
+.section-gap{margin-top:14px}
+.health-banner{
+  padding:11px 14px;border-radius:10px;border:1px solid rgba(50,213,131,.2);
+  background:rgba(50,213,131,.055);font-size:11px;color:#9bc8b1;
+}
+.empty{padding:35px;text-align:center;color:#62778d;font-size:11px}
+.footer{padding:18px 28px;border-top:1px solid var(--line);color:#566d85;font-size:10px}
+.toast{
+  position:fixed;right:22px;bottom:22px;background:#102237;border:1px solid #294762;
+  color:#dcecff;padding:11px 14px;border-radius:10px;font-size:11px;
+  box-shadow:var(--shadow);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s;z-index:50;
+}
+.toast.show{opacity:1;transform:none}
+@media(max-width:1100px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .two{grid-template-columns:1fr}
+  .policy-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+  .sidebar{width:62px;padding:18px 8px}
+  .brand-title,.brand-sub,.nav-label,.nav button span,.system-mini{display:none}
+  .brand{justify-content:center;padding:4px 0 24px}
+  .nav button{justify-content:center}
+  .main{margin-left:62px;width:calc(100% - 62px)}
+  .topbar{padding:0 15px}
+  .top-actions .btn{display:none}
+  .content{padding:18px 14px}
+  .kpi-grid,.three{grid-template-columns:1fr}
+  .info-list{grid-template-columns:1fr}
+  .policy-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 17V7m5 14V3m5 15V6m5 11V9"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-title">Network Intelligence</div>
+      <div class="brand-sub">Adaptive Control Center</div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-label">Monitor</div>
+    <button class="active" data-section="overview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Overview</span>
+    </button>
+    <button data-section="network">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3"/></svg><span>Network</span>
+    </button>
+    <button data-section="ml">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1m0-14.2L17 7m-10 10-2.1 2.1"/></svg><span>ML Intelligence</span>
+    </button>
+
+    <div class="nav-label">Control</div>
+    <button data-section="traffic">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19h16M6 17V7m6 10V4m6 13v-6"/></svg><span>Traffic Control</span>
+    </button>
+    <button data-section="history">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><span>History</span>
+    </button>
+
+    <div class="nav-label">Analysis</div>
+    <button data-section="experiments">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3h6m-5 0v7.5L5 20h14l-5-9.5V3"/></svg><span>Experiments</span>
+    </button>
+    <button data-section="reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg><span>Reports & Data</span>
+    </button>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="system-mini">
+      <div class="system-mini-row"><span>Backend</span><strong id="miniBackend"><span class="dot"></span>--</strong></div>
+      <div class="system-mini-row"><span>Controller</span><strong id="miniController"><span class="dot"></span>--</strong></div>
+      <div class="system-mini-row"><span>Interface</span><strong id="miniInterface">--</strong></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div>
+    <div class="page-title" id="pageTitle">Network Overview</div>
+    <div class="page-subtitle" id="pageSubtitle">Live operational view of the adaptive congestion-control system</div>
+  </div>
+  <div class="top-actions">
+    <div class="live-pill"><span class="dot green"></span>LIVE</div>
+    <div class="status-pill" id="topState">State: --</div>
+    <button class="btn" onclick="refreshAll()">↻ Refresh</button>
+  </div>
+</header>
+
+<div class="content">
+
+<!-- OVERVIEW -->
+<section class="section active" id="section-overview">
+  <div class="section-head">
+    <div>
+      <div class="section-title">Operational Overview</div>
+      <div class="section-desc">Real-time telemetry, congestion intelligence and adaptive traffic management.</div>
+    </div>
+    <div class="card-meta" id="lastUpdate">Waiting for telemetry…</div>
+  </div>
+
+  <div class="grid kpi-grid">
+    <div class="card kpi">
+      <div class="kpi-top"><div class="kpi-label">TOTAL TRAFFIC</div><div class="kpi-icon">↕</div></div>
+      <div class="kpi-value" id="kTraffic">--<span class="kpi-unit">Mbps</span></div>
+      <div class="kpi-foot" id="kTrafficFoot">RX -- / TX --</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-top"><div class="kpi-label">LATENCY</div><div class="kpi-icon">◷</div></div>
+      <div class="kpi-value" id="kLatency">--<span class="kpi-unit">ms</span></div>
+      <div class="kpi-foot">Live network response time</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-top"><div class="kpi-label">JITTER</div><div class="kpi-icon">≈</div></div>
+      <div class="kpi-value" id="kJitter">--<span class="kpi-unit">ms</span></div>
+      <div class="kpi-foot">Packet timing variation</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-top"><div class="kpi-label">PACKET LOSS</div><div class="kpi-icon">⌁</div></div>
+      <div class="kpi-value" id="kLoss">--<span class="kpi-unit">%</span></div>
+      <div class="kpi-foot">Measured packet loss</div>
+    </div>
+  </div>
+
+  <div class="grid two section-gap">
+    <div class="card chart-card">
+      <div class="card-head">
+        <div><div class="card-title">Live Network Throughput</div><div class="card-meta">RX / TX / total traffic</div></div>
+        <div class="card-meta">Rolling live window</div>
+      </div>
+      <div class="chart-wrap"><canvas id="trafficChart"></canvas></div>
+      <div class="legend">
+        <span><i style="background:#46d8ff"></i>RX</span>
+        <span><i style="background:#9b8cff"></i>TX</span>
+        <span><i style="background:#32d583"></i>Total</span>
+      </div>
+    </div>
+
+    <div class="card state-card">
+      <div class="card-head">
+        <div><div class="card-title">Congestion Intelligence</div><div class="card-meta">ML prediction + live safety validation</div></div>
+      </div>
+      <div class="state" id="stateBox">
+        <div class="state-name state-normal" id="stateName">CONNECTING</div>
+        <div class="state-reason" id="stateReason">Waiting for live controller telemetry.</div>
+      </div>
+      <div class="score-row"><span>Congestion score</span><strong id="scoreValue">0%</strong></div>
+      <div class="progress"><div id="scoreBar" style="width:0%"></div></div>
+      <div class="info-list" style="margin-top:15px">
+        <div class="info"><div class="info-label">ML Prediction</div><div class="info-value" id="mlPrediction">--</div></div>
+        <div class="info"><div class="info-label">Confidence</div><div class="info-value" id="mlConfidence">--</div></div>
+        <div class="info"><div class="info-label">Controller Cycle</div><div class="info-value" id="cycle">--</div></div>
+        <div class="info"><div class="info-label">Controller</div><div class="info-value" id="controllerStatus">--</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid two section-gap">
+    <div class="card chart-card">
+      <div class="card-head"><div><div class="card-title">Latency & Jitter</div><div class="card-meta">Live network quality</div></div></div>
+      <div class="chart-wrap"><canvas id="qualityChart"></canvas></div>
+      <div class="legend">
+        <span><i style="background:#f6c85f"></i>Latency</span>
+        <span><i style="background:#ff6577"></i>Jitter</span>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="card-head"><div><div class="card-title">Adaptive Policy</div><div class="card-meta">Current Linux traffic-control allocation</div></div><span class="badge ok" id="policyApplied">--</span></div>
+      <div class="policy-grid">
+        <div class="policy high"><div class="policy-name">HIGH</div><div class="policy-value" id="pHigh">--</div><div class="policy-unit">Mbps</div></div>
+        <div class="policy medium"><div class="policy-name">MEDIUM</div><div class="policy-value" id="pMedium">--</div><div class="policy-unit">Mbps</div></div>
+        <div class="policy low"><div class="policy-name">LOW</div><div class="policy-value" id="pLow">--</div><div class="policy-unit">Mbps</div></div>
+        <div class="policy"><div class="policy-name">ROOT</div><div class="policy-value" id="pRoot">--</div><div class="policy-unit">Mbps</div></div>
+      </div>
+      <div class="info" style="margin-top:10px"><div class="info-label">Decision Reason</div><div class="info-value" id="decisionReason">--</div></div>
+    </div>
+  </div>
+
+  <div class="grid two section-gap">
+    <div class="card chart-card">
+      <div class="card-head"><div><div class="card-title">Network Identity</div><div class="card-meta">Current interface and wireless context</div></div></div>
+      <div class="info-list">
+        <div class="info"><div class="info-label">Interface</div><div class="info-value" id="infoInterface">--</div></div>
+        <div class="info"><div class="info-label">Local IP</div><div class="info-value" id="infoIP">--</div></div>
+        <div class="info"><div class="info-label">Gateway</div><div class="info-value" id="infoGateway">--</div></div>
+        <div class="info"><div class="info-label">Wi-Fi</div><div class="info-value" id="infoWifi">--</div></div>
+        <div class="info"><div class="info-label">Band</div><div class="info-value" id="infoBand">--</div></div>
+        <div class="info"><div class="info-label">Radio</div><div class="info-value" id="infoRadio">--</div></div>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="card-head"><div><div class="card-title">Recent Adaptation Events</div><div class="card-meta">Controller feedback loop</div></div></div>
+      <div class="timeline" id="overviewEvents"><div class="empty">Waiting for controller events…</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- NETWORK -->
+<section class="section" id="section-network">
+  <div class="section-head"><div><div class="section-title">Network Intelligence</div><div class="section-desc">Raw telemetry and engineered network features from the live collector.</div></div></div>
+  <div class="grid three">
+    <div class="card state-card"><div class="card-head"><div class="card-title">Wireless Signal</div></div><div class="kpi-value" id="netSignal">--<span class="kpi-unit">%</span></div><div class="progress"><div id="signalBar" style="width:0%"></div></div></div>
+    <div class="card state-card"><div class="card-head"><div class="card-title">RSSI</div></div><div class="kpi-value" id="netRssi">--<span class="kpi-unit">dBm</span></div><div class="kpi-foot">Received signal strength</div></div>
+    <div class="card state-card"><div class="card-head"><div class="card-title">Link Activity</div></div><div class="kpi-value" id="netActivity">--<span class="kpi-unit">%</span></div><div class="kpi-foot">Observed interface activity</div></div>
+  </div>
+
+  <div class="card chart-card section-gap">
+    <div class="card-head"><div><div class="card-title">Live Network Quality</div><div class="card-meta">Latency, jitter and packet loss</div></div></div>
+    <div class="chart-wrap"><canvas id="networkQualityChart"></canvas></div>
+  </div>
+
+  <div class="card chart-card section-gap">
+    <div class="card-head"><div><div class="card-title">Telemetry Snapshot</div><div class="card-meta">Current measured and derived values</div></div></div>
+    <div class="info-list" id="telemetryGrid"></div>
+  </div>
+</section>
+
+<!-- ML -->
+<section class="section" id="section-ml">
+  <div class="section-head"><div><div class="section-title">ML Intelligence</div><div class="section-desc">Live Random Forest prediction, confidence distribution and safety validation.</div></div></div>
+  <div class="grid two">
+    <div class="card state-card">
+      <div class="card-head"><div><div class="card-title">Current Model Decision</div><div class="card-meta">Prediction before validation</div></div></div>
+      <div class="state" id="mlStateBox"><div class="state-name state-normal" id="mlState">--</div><div class="state-reason" id="mlReason">--</div></div>
+      <div class="score-row"><span>Prediction confidence</span><strong id="mlConfBig">--</strong></div>
+      <div class="progress"><div id="mlConfBar" style="width:0%"></div></div>
+    </div>
+    <div class="card chart-card">
+      <div class="card-head"><div><div class="card-title">Class Probability</div><div class="card-meta">Current model output</div></div></div>
+      <div class="chart-wrap"><canvas id="probChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card chart-card section-gap">
+    <div class="card-head"><div><div class="card-title">Decision Pipeline</div><div class="card-meta">How the system reaches the final control state</div></div></div>
+    <div class="policy-grid" style="grid-template-columns:repeat(5,1fr)">
+      <div class="policy"><div class="policy-name">01 · TELEMETRY</div><div class="policy-value">LIVE</div><div class="policy-unit">Collector</div></div>
+      <div class="policy"><div class="policy-name">02 · FEATURES</div><div class="policy-value">READY</div><div class="policy-unit">37 engineered features</div></div>
+      <div class="policy"><div class="policy-name">03 · ML</div><div class="policy-value" id="pipeML">--</div><div class="policy-unit">Random Forest</div></div>
+      <div class="policy"><div class="policy-name">04 · SAFETY</div><div class="policy-value" id="pipeSafety">--</div><div class="policy-unit">Validated state</div></div>
+      <div class="policy"><div class="policy-name">05 · CONTROL</div><div class="policy-value">ACTIVE</div><div class="policy-unit">Linux tc / HTB</div></div>
+    </div>
+  </div>
+
+  <div class="card chart-card section-gap">
+    <div class="card-head"><div><div class="card-title">Model Inputs</div><div class="card-meta">Key live features used for congestion assessment</div></div></div>
+    <div class="info-list" id="mlInputs"></div>
+  </div>
+</section>
+
+<!-- TRAFFIC -->
+<section class="section" id="section-traffic">
+  <div class="section-head"><div><div class="section-title">Traffic Control</div><div class="section-desc">Linux traffic-control state and adaptive priority allocation.</div></div></div>
+  <div class="health-banner" id="tcBanner">Checking Linux traffic-control state…</div>
+
+  <div class="grid four section-gap">
+    <div class="card kpi"><div class="kpi-label">ROOT CAPACITY</div><div class="kpi-value" id="tcRoot">--<span class="kpi-unit">Mbps</span></div></div>
+    <div class="card kpi"><div class="kpi-label">HIGH CLASS</div><div class="kpi-value" id="tcHigh">--<span class="kpi-unit">Mbps</span></div></div>
+    <div class="card kpi"><div class="kpi-label">MEDIUM CLASS</div><div class="kpi-value" id="tcMedium">--<span class="kpi-unit">Mbps</span></div></div>
+    <div class="card kpi"><div class="kpi-label">LOW CLASS</div><div class="kpi-value" id="tcLow">--<span class="kpi-unit">Mbps</span></div></div>
+  </div>
+
+  <div class="card chart-card section-gap">
+    <div class="card-head"><div><div class="card-title">Current Adaptive Allocation</div><div class="card-meta">Priority-aware bandwidth policy</div></div><span class="badge ok" id="tcApplied">--</span></div>
+    <div class="policy-grid">
+      <div class="policy high"><div class="policy-name">HIGH PRIORITY · UDP 5201</div><div class="policy-value" id="tcHigh2">--</div><div class="policy-unit">guaranteed Mbps</div></div>
+      <div class="policy medium"><div class="policy-name">MEDIUM · UDP 5202</div><div class="policy-value" id="tcMedium2">--</div><div class="policy-unit">guaranteed Mbps</div></div>
+      <div class="policy low"><div class="policy-name">LOW · UDP 5203</div><div class="policy-value" id="tcLow2">--</div><div class="policy-unit">guaranteed Mbps</div></div>
+      <div class="policy"><div class="policy-name">ROOT HTB</div><div class="policy-value" id="tcRoot2">--</div><div class="policy-unit">Mbps</div></div>
+    </div>
+  </div>
+
+  <div class="card chart-card section-gap">
+    <div class="card-head"><div><div class="card-title">Traffic-Control Diagnostics</div><div class="card-meta">Backend-reported `tc` state</div></div></div>
+    <pre id="tcDetails" style="white-space:pre-wrap;word-break:break-word;color:#9db2c8;font-size:10px;line-height:1.55;margin:0;max-height:420px;overflow:auto">Waiting…</pre>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section class="section" id="section-history">
+  <div class="section-head"><div><div class="section-title">Historical Telemetry</div><div class="section-desc">Recent live samples received from the monitoring pipeline.</div></div></div>
+  <div class="card chart-card">
+    <div class="card-head"><div><div class="card-title">Traffic History</div><div class="card-meta">Recent RX / TX / total throughput</div></div></div>
+    <div class="chart-wrap"><canvas id="historyTrafficChart"></canvas></div>
+  </div>
+  <div class="grid two section-gap">
+    <div class="card chart-card"><div class="card-head"><div><div class="card-title">Latency History</div></div></div><div class="chart-wrap"><canvas id="historyLatencyChart"></canvas></div></div>
+    <div class="card chart-card"><div class="card-head"><div><div class="card-title">Jitter History</div></div></div><div class="chart-wrap"><canvas id="historyJitterChart"></canvas></div></div>
+  </div>
+  <div class="card chart-card section-gap">
+    <div class="card-head"><div><div class="card-title">Recent Samples</div><div class="card-meta">Newest telemetry first</div></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Time</th><th>Traffic</th><th>RX</th><th>TX</th><th>Latency</th><th>Jitter</th><th>Loss</th></tr></thead><tbody id="historyTable"></tbody></table></div>
+  </div>
+</section>
+
+<!-- EXPERIMENTS -->
+<section class="section" id="section-experiments">
+  <div class="section-head"><div><div class="section-title">Experiments & Model Results</div><div class="section-desc">Controlled experiment and model-evaluation information exposed by the backend.</div></div></div>
+  <div class="grid three">
+    <div class="card kpi"><div class="kpi-label">DATASET</div><div class="kpi-value" id="expRows">--</div><div class="kpi-foot">Experimental samples</div></div>
+    <div class="card kpi"><div class="kpi-label">MODEL</div><div class="kpi-value" id="expModel" style="font-size:19px">--</div><div class="kpi-foot">Evaluation summary</div></div>
+    <div class="card kpi"><div class="kpi-label">STATUS</div><div class="kpi-value" id="expStatus" style="font-size:19px">--</div><div class="kpi-foot">Backend experiment API</div></div>
+  </div>
+  <div class="card chart-card section-gap">
+    <div class="card-head"><div><div class="card-title">Experiment Data</div><div class="card-meta">Backend-provided results</div></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Label</th><th>Latency</th><th>Jitter</th><th>Loss</th><th>RX</th><th>TX</th><th>Total</th></tr></thead><tbody id="experimentTable"></tbody></table></div>
+  </div>
+</section>
+
+<!-- REPORTS -->
+<section class="section" id="section-reports">
+  <div class="section-head"><div><div class="section-title">Reports & Data</div><div class="section-desc">Export operational evidence for analysis, sharing and project documentation.</div></div></div>
+  <div class="grid three">
+    <div class="card chart-card">
+      <div class="card-title">Telemetry Dataset</div>
+      <div class="card-meta" style="margin-top:6px">Export the live monitoring data collected by the system.</div>
+      <button class="btn primary" style="margin-top:18px" onclick="download('/api/export/csv')">Export CSV</button>
+    </div>
+    <div class="card chart-card">
+      <div class="card-title">System Report</div>
+      <div class="card-meta" style="margin-top:6px">Open the backend-generated report containing system results.</div>
+      <button class="btn primary" style="margin-top:18px" onclick="window.open('/api/report','_blank')">Generate / Open Report</button>
+    </div>
+    <div class="card chart-card">
+      <div class="card-title">Controller Events</div>
+      <div class="card-meta" style="margin-top:6px">Review the recorded closed-loop adaptation history.</div>
+      <button class="btn" style="margin-top:18px" onclick="showSection('history')">View History</button>
+    </div>
+  </div>
+  <div class="card chart-card section-gap">
+    <div class="card-head"><div><div class="card-title">System Health</div><div class="card-meta">Live backend availability</div></div></div>
+    <div class="info-list" id="healthGrid"></div>
+  </div>
+</section>
+
+</div>
+
+<footer class="footer">
+  Intelligent Live Network Congestion Prediction & Closed-Loop Adaptive Traffic Management System
+  <span style="float:right" id="footerTime">--</span>
+</footer>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const state={
+  metrics:null,history:[],events:[],tc:null,health:null,experiments:null,
+  traffic:{rx:[],tx:[],total:[],labels:[]},
+  quality:{latency:[],jitter:[],labels:[]}
+};
+
+const $=id=>document.getElementById(id);
+const num=(v,d=0)=>{const n=parseFloat(v);return Number.isFinite(n)?n:d};
+const fmt=(v,d=2)=>num(v).toFixed(d);
+const esc=v=>String(v??'--').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const stateClass=s=>String(s||'').toLowerCase().includes('congested')?'congested':String(s||'').toLowerCase().includes('warning')?'warning':'normal';
+
+function toast(msg){
+  $('toast').textContent=msg;$('toast').classList.add('show');
+  clearTimeout(window._toast);window._toast=setTimeout(()=>$('toast').classList.remove('show'),2600);
+}
+
+function download(url){window.location.href=url}
+
+const titles={
+ overview:['Network Overview','Live operational view of the adaptive congestion-control system'],
+ network:['Network Intelligence','Raw telemetry and engineered network features from the live collector'],
+ ml:['ML Intelligence','Live prediction, confidence distribution and safety validation'],
+ traffic:['Traffic Control','Linux traffic-control state and adaptive priority allocation'],
+ history:['Historical Telemetry','Recent live samples received from the monitoring pipeline'],
+ experiments:['Experiments & Model Results','Controlled experiment and model-evaluation information'],
+ reports:['Reports & Data','Export operational evidence for analysis, sharing and documentation']
+};
+
+document.querySelectorAll('.nav button').forEach(btn=>{
+  btn.addEventListener('click',()=>showSection(btn.dataset.section));
+});
+function showSection(name){
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.section===name));
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id==='section-'+name));
+  const t=titles[name]||titles.overview;
+  $('pageTitle').textContent=t[0];$('pageSubtitle').textContent=t[1];
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function addPoint(bucket,label,values,max=60){
+  bucket.labels.push(label);
+  Object.keys(values).forEach(k=>bucket[k].push(num(values[k])));
+  if(bucket.labels.length>max){
+    bucket.labels.shift();
+    Object.keys(values).forEach(k=>bucket[k].shift());
+  }
+}
+
+function drawChart(canvasId,series,labels,options={}){
+  const c=$(canvasId);if(!c)return;
+  const rect=c.getBoundingClientRect();const dpr=devicePixelRatio||1;
+  const w=Math.max(300,rect.width),h=Math.max(170,rect.height);
+  c.width=w*dpr;c.height=h*dpr;
+  const ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,w,h);
+  const pad={l:42,r:12,t:15,b:25};
+  const iw=w-pad.l-pad.r,ih=h-pad.t-pad.b;
+  let max=options.max??0;
+  if(!max)series.forEach(s=>s.data.forEach(v=>{if(Number.isFinite(v))max=Math.max(max,v)}));
+  max=Math.max(max||1,options.minScale||1);
+  if(options.maxScale)max=Math.max(max,options.maxScale);
+  const min=options.min??0;
+  ctx.strokeStyle='#1b3047';ctx.lineWidth=1;
+  ctx.font='9px Inter, sans-serif';ctx.fillStyle='#627890';
+  for(let i=0;i<=4;i++){
+    const y=pad.t+ih-(ih*i/4);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();
+    const val=min+(max-min)*i/4;ctx.fillText(val.toFixed(options.decimals??0),4,y+3);
+  }
+  if(!labels.length)return;
+  series.forEach(s=>{
+    ctx.strokeStyle=s.color;ctx.lineWidth=2;ctx.beginPath();
+    s.data.forEach((v,i)=>{
+      const x=pad.l+(labels.length===1?0:(iw*i/(labels.length-1)));
+      const y=pad.t+ih-((v-min)/(max-min||1))*ih;
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    if(labels.length<30){
+      ctx.fillStyle=s.color;
+      s.data.forEach((v,i)=>{
+        const x=pad.l+(labels.length===1?0:(iw*i/(labels.length-1)));
+        const y=pad.t+ih-((v-min)/(max-min||1))*ih;
+        ctx.beginPath();ctx.arc(x,y,2.4,0,Math.PI*2);ctx.fill();
+      });
+    }
+  });
+  ctx.fillStyle='#526b83';
+  const step=Math.max(1,Math.ceil(labels.length/6));
+  labels.forEach((l,i)=>{if(i%step===0)ctx.fillText(l,pad.l+iw*(labels.length===1?0:i/(labels.length-1)),h-7)});
+}
+
+function drawProbability(){
+  const m=state.metrics||{};const p=m.probabilities||{};
+  const labels=['NORMAL','WARNING','CONGESTED'];
+  const vals=labels.map(x=>num(p[x])*100);
+  drawChart('probChart',[
+    {data:vals,color:'#46d8ff'}
+  ],labels,{maxScale:100,decimals:0});
+}
+
+function renderMetrics(m){
+  if(!m)return;
+  const f=m.features||{};
+  const policy=m.policy||{};
+  state.metrics=m;
+
+  $('kTraffic').innerHTML=fmt(m.total_traffic_mbps,3)+'<span class="kpi-unit">Mbps</span>';
+  $('kTrafficFoot').textContent='RX '+fmt(m.rx_mbps,3)+' / TX '+fmt(m.tx_mbps,3);
+  $('kLatency').innerHTML=fmt(m.latency_ms,2)+'<span class="kpi-unit">ms</span>';
+  $('kJitter').innerHTML=fmt(m.jitter_ms,2)+'<span class="kpi-unit">ms</span>';
+  $('kLoss').innerHTML=fmt(m.packet_loss_percent,2)+'<span class="kpi-unit">%</span>';
+
+  const validated=m.validated_state||m.controller_decision?.status||'--';
+  const cls=stateClass(validated);
+  $('stateBox').className='state '+cls;
+  $('stateName').textContent=validated;
+  $('stateName').className='state-name state-'+cls;
+  $('stateReason').textContent=m.reason||m.controller_decision?.reason||'--';
+  $('topState').textContent='State: '+validated;
+
+  const score=Math.max(0,Math.min(1,num(m.congestion_score)));
+  $('scoreValue').textContent=(score*100).toFixed(1)+'%';
+  $('scoreBar').style.width=(score*100)+'%';
+  $('mlPrediction').textContent=m.ml_prediction||'--';
+  $('mlConfidence').textContent=(num(m.ml_confidence)*100).toFixed(2)+'%';
+  $('cycle').textContent=m.controller_cycle??'--';
+  $('controllerStatus').textContent=m.controller_available?'ACTIVE':'OFFLINE';
+
+  $('pHigh').textContent=fmt(policy.high_mbps,2);
+  $('pMedium').textContent=fmt(policy.medium_mbps,2);
+  $('pLow').textContent=fmt(policy.low_mbps,2);
+  $('pRoot').textContent=fmt(policy.root_mbps,2);
+  $('policyApplied').textContent=policy.applied?'APPLIED':'NOT APPLIED';
+  $('policyApplied').className='badge '+(policy.applied?'ok':'congested');
+  $('decisionReason').textContent=m.controller_decision?.reason||m.reason||'--';
+
+  $('infoInterface').textContent=m.interface||f.interface||'--';
+  $('infoIP').textContent=f.local_ip||'--';
+  $('infoGateway').textContent=f.gateway||'--';
+  $('infoWifi').textContent=(f.wifi_state||'--')+(f.wifi_interface?' · '+f.wifi_interface:'');
+  $('infoBand').textContent=f.band||'--';
+  $('infoRadio').textContent=f.radio_type||'--';
+
+  $('netSignal').innerHTML=fmt(m.signal_percent,0)+'<span class="kpi-unit">%</span>';
+  $('signalBar').style.width=Math.max(0,Math.min(100,num(m.signal_percent)))+'%';
+  $('netRssi').innerHTML=fmt(m.rssi_dbm,0)+'<span class="kpi-unit">dBm</span>';
+  $('netActivity').innerHTML=fmt(m.link_activity_percent*100,3)+'<span class="kpi-unit">%</span>';
+
+  $('mlState').textContent=m.ml_prediction||'--';
+  $('mlState').className='state-name state-'+stateClass(m.ml_prediction);
+  $('mlStateBox').className='state '+stateClass(m.ml_prediction);
+  $('mlReason').textContent=m.controller_decision?.reason||m.reason||'--';
+  $('mlConfBig').textContent=(num(m.ml_confidence)*100).toFixed(2)+'%';
+  $('mlConfBar').style.width=Math.min(100,num(m.ml_confidence)*100)+'%';
+
+  $('pipeML').textContent=m.ml_prediction||'--';
+  $('pipeSafety').textContent=validated;
+
+  $('tcRoot').innerHTML=fmt(policy.root_mbps,2)+'<span class="kpi-unit">Mbps</span>';
+  $('tcHigh').innerHTML=fmt(policy.high_mbps,2)+'<span class="kpi-unit">Mbps</span>';
+  $('tcMedium').innerHTML=fmt(policy.medium_mbps,2)+'<span class="kpi-unit">Mbps</span>';
+  $('tcLow').innerHTML=fmt(policy.low_mbps,2)+'<span class="kpi-unit">Mbps</span>';
+  $('tcHigh2').textContent=fmt(policy.high_mbps,2);
+  $('tcMedium2').textContent=fmt(policy.medium_mbps,2);
+  $('tcLow2').textContent=fmt(policy.low_mbps,2);
+  $('tcRoot2').textContent=fmt(policy.root_mbps,2);
+  $('tcApplied').textContent=policy.applied?'APPLIED':'NOT APPLIED';
+  $('tcApplied').className='badge '+(policy.applied?'ok':'congested');
+
+  $('lastUpdate').textContent='Telemetry '+formatTime(m.timestamp||m.server_time);
+  $('footerTime').textContent='Last refresh '+formatTime(m.server_time);
+  $('miniInterface').textContent=m.interface||'--';
+  $('miniBackend').innerHTML='<span class="dot '+(m.data_available?'green':'red')+'"></span>'+(m.data_available?'ONLINE':'OFFLINE');
+  $('miniController').innerHTML='<span class="dot '+(m.controller_available?'green':'red')+'"></span>'+(m.controller_available?'ACTIVE':'OFFLINE');
+
+  const inputPairs=[
+    ['Traffic',fmt(m.total_traffic_mbps,3)+' Mbps'],
+    ['RX',fmt(m.rx_mbps,3)+' Mbps'],
+    ['TX',fmt(m.tx_mbps,3)+' Mbps'],
+    ['Latency',fmt(m.latency_ms,3)+' ms'],
+    ['Jitter',fmt(m.jitter_ms,3)+' ms'],
+    ['Packet loss',fmt(m.packet_loss_percent,3)+' %'],
+    ['Traffic change',fmt(f.traffic_change,3)],
+    ['Latency change',fmt(f.latency_change,3)],
+    ['Jitter change',fmt(f.jitter_change,3)],
+    ['Signal',fmt(m.signal_percent,1)+' %'],
+    ['RSSI',fmt(m.rssi_dbm,1)+' dBm'],
+    ['Link activity',fmt(m.link_activity_percent*100,4)+' %']
+  ];
+  $('mlInputs').innerHTML=inputPairs.map(x=>'<div class="info"><div class="info-label">'+esc(x[0])+'</div><div class="info-value">'+esc(x[1])+'</div></div>').join('');
+
+  const telemetry=[
+    ['RX bytes',f.rx_bytes],['TX bytes',f.tx_bytes],['RX packets',f.rx_packets],['TX packets',f.tx_packets],
+    ['RX errors',f.rx_errors],['TX errors',f.tx_errors],['RX dropped',f.rx_dropped],['TX dropped',f.tx_dropped],
+    ['Receive rate',fmt(m.receive_rate_mbps,1)+' Mbps'],['Transmit rate',fmt(m.transmit_rate_mbps,1)+' Mbps'],
+    ['Channel',f.channel],['SSID',f.ssid],['Radio type',f.radio_type],['Wi-Fi state',f.wifi_state]
+  ];
+  $('telemetryGrid').innerHTML=telemetry.map(x=>'<div class="info"><div class="info-label">'+esc(x[0])+'</div><div class="info-value">'+esc(x[1])+'</div></div>').join('');
+
+  const label=formatShortTime(m.timestamp||m.server_time);
+  addPoint(state.traffic,label,{rx:m.rx_mbps,tx:m.tx_mbps,total:m.total_traffic_mbps});
+  addPoint(state.quality,label,{latency:m.latency_ms,jitter:m.jitter_ms});
+  drawChart('trafficChart',[
+    {data:state.traffic.rx,color:'#46d8ff'},
+    {data:state.traffic.tx,color:'#9b8cff'},
+    {data:state.traffic.total,color:'#32d583'}
+  ],state.traffic.labels,{decimals:1});
+  drawChart('qualityChart',[
+    {data:state.quality.latency,color:'#f6c85f'},
+    {data:state.quality.jitter,color:'#ff6577'}
+  ],state.quality.labels,{decimals:1});
+  drawProbability();
+  drawNetworkChart();
+}
+
+function drawNetworkChart(){
+  drawChart('networkQualityChart',[
+    {data:state.quality.latency,color:'#46d8ff'},
+    {data:state.quality.jitter,color:'#ff6577'}
+  ],state.quality.labels,{decimals:1});
+}
+
+function formatTime(v){
+  if(!v)return '--';
+  const d=new Date(v);if(isNaN(d))return String(v);
+  return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+function formatShortTime(v){
+  if(!v)return '';
+  const d=new Date(v);if(isNaN(d))return '';
+  return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+
+async function getJSON(url){
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok)throw new Error(url+' '+r.status);
+  return r.json();
+}
+
+async function fetchMetrics(){
+  try{renderMetrics(await getJSON('/api/metrics'))}
+  catch(e){$('miniBackend').innerHTML='<span class="dot red"></span>ERROR';}
+}
+
+async function fetchHistory(){
+  try{
+    const d=await getJSON('/api/history');
+    state.history=Array.isArray(d)?d:(d.history||d.data||[]);
+    renderHistory();
+  }catch(e){}
+}
+
+async function fetchEvents(){
+  try{
+    const d=await getJSON('/api/events');
+    state.events=Array.isArray(d)?d:(d.events||[]);
+    renderEvents();
+  }catch(e){}
+}
+
+async function fetchTC(){
+  try{
+    state.tc=await getJSON('/api/tc');
+    const d=state.tc;
+    $('tcBanner').textContent='Linux traffic-control backend is responding. Live policy and diagnostics are available.';
+    $('tcBanner').style.color='#9bc8b1';
+    $('tcDetails').textContent=typeof d==='string'?d:JSON.stringify(d,null,2);
+  }catch(e){
+    $('tcBanner').textContent='Traffic-control diagnostics unavailable from backend.';
+    $('tcBanner').style.color='#ff9aa7';
+  }
+}
+
+async function fetchHealth(){
+  try{
+    state.health=await getJSON('/api/health');
+    renderHealth();
+  }catch(e){}
+}
+
+async function fetchExperiments(){
+  try{
+    state.experiments=await getJSON('/api/experiments');
+    renderExperiments();
+  }catch(e){}
+}
+
+function renderEvents(){
+  const arr=state.events||[];
+  const recent=arr.slice(-10).reverse();
+  const html=recent.map(e=>{
+    const decision=e.decision||e.status||e.prediction||'EVENT';
+    const reason=e.reason||e.type||'Controller event';
+    return '<div class="event"><div class="event-time">'+esc(formatTime(e.timestamp))+'</div><div class="event-line"></div><div class="event-body"><strong>'+esc(decision)+'</strong> · '+esc(reason)+'</div></div>';
+  }).join('');
+  $('overviewEvents').innerHTML=html||'<div class="empty">No controller events available.</div>';
+}
+
+function normalizeHistory(arr){
+  return arr.map(x=>({
+    timestamp:x.timestamp||x.time||x.ts,
+    rx:num(x.rx_mbps??x.rx),
+    tx:num(x.tx_mbps??x.tx),
+    total:num(x.total_traffic_mbps??x.total),
+    latency:num(x.latency_ms??x.latency),
+    jitter:num(x.jitter_ms??x.jitter),
+    loss:num(x.packet_loss_percent??x.loss)
+  })).filter(x=>x.timestamp);
+}
+
+function renderHistory(){
+  const arr=normalizeHistory(state.history||[]);
+  const recent=arr.slice(-60);
+  const labels=recent.map(x=>formatShortTime(x.timestamp));
+  drawChart('historyTrafficChart',[
+    {data:recent.map(x=>x.rx),color:'#46d8ff'},
+    {data:recent.map(x=>x.tx),color:'#9b8cff'},
+    {data:recent.map(x=>x.total),color:'#32d583'}
+  ],labels,{decimals:1});
+  drawChart('historyLatencyChart',[
+    {data:recent.map(x=>x.latency),color:'#f6c85f'}
+  ],labels,{decimals:1});
+  drawChart('historyJitterChart',[
+    {data:recent.map(x=>x.jitter),color:'#ff6577'}
+  ],labels,{decimals:1});
+  $('historyTable').innerHTML=arr.slice(-20).reverse().map(x=>'<tr>'+
+    '<td>'+esc(formatTime(x.timestamp))+'</td><td>'+fmt(x.total,3)+' Mbps</td>'+
+    '<td>'+fmt(x.rx,3)+'</td><td>'+fmt(x.tx,3)+'</td>'+
+    '<td>'+fmt(x.latency,2)+' ms</td><td>'+fmt(x.jitter,2)+' ms</td><td>'+fmt(x.loss,2)+'%</td></tr>').join('');
+}
+
+function renderExperiments(){
+  const d=state.experiments;
+  if(!d)return;
+  const rows=Array.isArray(d)?d:(d.data||d.rows||d.experiments||[]);
+  $('expRows').textContent=rows.length||d.count||'--';
+  $('expModel').textContent=d.model||d.model_name||'Controlled';
+  $('expStatus').textContent=d.status||'AVAILABLE';
+  $('experimentTable').innerHTML=rows.slice(0,50).map(x=>'<tr>'+
+    '<td><span class="badge '+stateClass(x.label)+'">'+esc(x.label)+'</span></td>'+
+    '<td>'+fmt(x.latency_ms,2)+'</td><td>'+fmt(x.jitter_ms,2)+'</td><td>'+fmt(x.packet_loss_percent,2)+'</td>'+
+    '<td>'+fmt(x.rx_mbps,2)+'</td><td>'+fmt(x.tx_mbps,2)+'</td><td>'+fmt(x.total_traffic_mbps,2)+'</td></tr>').join('');
+}
+
+function renderHealth(){
+  const d=state.health||{};
+  const entries=Object.entries(d).slice(0,20);
+  $('healthGrid').innerHTML=entries.map(([k,v])=>'<div class="info"><div class="info-label">'+esc(k.replaceAll('_',' '))+'</div><div class="info-value">'+esc(typeof v==='object'?JSON.stringify(v):v)+'</div></div>').join('');
+}
+
+async function refreshAll(){
+  await Promise.all([fetchMetrics(),fetchHistory(),fetchEvents(),fetchTC(),fetchHealth(),fetchExperiments()]);
+  toast('Dashboard refreshed');
+}
+
+window.addEventListener('resize',()=>{
+  drawChart('trafficChart',[
+    {data:state.traffic.rx,color:'#46d8ff'},
+    {data:state.traffic.tx,color:'#9b8cff'},
+    {data:state.traffic.total,color:'#32d583'}
+  ],state.traffic.labels,{decimals:1});
+  drawChart('qualityChart',[
+    {data:state.quality.latency,color:'#f6c85f'},
+    {data:state.quality.jitter,color:'#ff6577'}
+  ],state.quality.labels,{decimals:1});
+  drawNetworkChart();
+  renderHistory();
+});
+
+refreshAll();
+setInterval(fetchMetrics,2000);
+setInterval(fetchHistory,5000);
+setInterval(fetchEvents,5000);
+setInterval(fetchTC,7000);
+setInterval(fetchHealth,10000);
+setInterval(fetchExperiments,15000);
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-10-04T13:32:57.896671+00:00",
+  "network": {
+    "interface": "eth0",
+    "local_ip": "192.168.19.121",
+    "gateway": "192.168.16.1",
+    "rx_mbps": 0.001,
+    "tx_mbps": 0.001,
+    "rx_bytes": 219405583,
+    "tx_bytes": 14887185498,
+    "rx_packets": 113622,
+    "tx_packets": 4677674,
+    "rx_errors": 0,
+    "tx_errors": 0,
+    "rx_dropped": 0,
+    "tx_dropped": 9371
+  },
+  "quality": {
+    "latency_ms": 9.248,
+    "packet_loss_percent": 0.0,
+    "jitter_ms": 1.487
+  },
+  "wifi": {
+    "wifi_available": true,
+    "interface": "Wi-Fi",
+    "description": "Intel(R) Wi-Fi 6 AX201 160MHz",
+    "state": "connected",
+    "ssid": "Airtel_Bala",
+    "band": "5 GHz",
+    "radio_type": "802.11ac",
+    "channel": 48,
+    "receive_rate_mbps": 351.0,
+    "transmit_rate_mbps": 104.0,
+    "signal_percent": 57.0,
+    "rssi_dbm": -77.0
+  }
+}

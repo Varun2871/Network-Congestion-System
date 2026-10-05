@@ -1,0 +1,4 @@
+timestamp,priority,port,offered_mbps,received_mbps,packet_loss_percent,jitter_ms
+2026-10-03 10:39:35,HIGH,5201,20,6.56,0.0,2.876
+2026-10-03 10:39:35,MEDIUM,5202,20,6.56,0.0,1.056
+2026-10-03 10:39:35,LOW,5203,20,6.49,0.0,4.599

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+network-congestion-venv/
+
+# Environment/secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated/build files
+build/
+dist/
+*.egg-info/
+
+# Backup files
+*.backup
+*.old
+*.bak
+backups/
+backups/
+backups/
