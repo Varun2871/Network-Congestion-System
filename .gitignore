@@ -42,3 +42,12 @@ dist/
 backups/
 backups/
 backups/
+
+# Backup / temporary project versions
+*.backup
+*.bak
+*.old
+*_backup.*
+*.before_*
+*.current
+backups/
