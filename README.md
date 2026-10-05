@@ -17,7 +17,7 @@ The system continuously measures network conditions, predicts the current state,
 
 ## 2. Closed-Loop Architecture
 
-```text
+
 Network Telemetry
        |
        v
